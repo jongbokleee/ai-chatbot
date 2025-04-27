@@ -81,7 +81,6 @@ export default function CreateCharacter() {
           className="textarea textarea-bordered w-full"
           required
         />
-
         {/* 대화 스타일 */}
         <select value={style} onChange={(e) => setStyle(e.target.value)} className="select select-bordered w-full">
           <option>친근한</option>
