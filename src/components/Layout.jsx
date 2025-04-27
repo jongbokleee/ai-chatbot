@@ -27,19 +27,7 @@ export default function Layout() {
             </svg>
           </button>
         </div>
-        <div className="hidden md:flex space-x-6">
-          <Link to="/menu" className="text-gray-700 hover:text-blue-500">메뉴1</Link>
-         
-        </div>
       </nav>
-
-      {menuOpen && (
-        <div className="md:hidden px-4 py-2 bg-white shadow space-y-2">
-          <Link to="/menu" className="text-gray-700 hover:text-blue-500">메뉴1</Link>
-          
-        </div>
-      )}
-
       <main className="flex-grow p-8">
         <Outlet />
       </main>
