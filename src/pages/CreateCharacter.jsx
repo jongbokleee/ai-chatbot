@@ -45,8 +45,8 @@ export default function CreateCharacter() {
       return;
     }
 
-    // 🧠 프롬프트 텍스트 생성
-    const fullPrompt = `${name}는 ${background} 기본 성격은 ${style}이다. 말투 특징은 ${speechPatterns.join(", ")}이고, 주로 대화할 주제는 ${topicLimit || "특정 제한 없음"}이다. 상황 예시: ${situationExamples}`;
+    // 🧠 프롬프트 텍스트 생성 (구체화)
+    const fullPrompt = `너는 ${name}라는 이름의 캐릭터야. ${background} 기본 성격은 ${style}이며, 말투 특징은 ${speechPatterns.join(", ")}을 가지고 있어.  대화 주제는 ${topicLimit || "특정 제한 없음"}을 우선시하고, 상황 예시는 ${situationExamples}이다. 항상 자연스럽고 맥락에 맞는 대화를 이어가야 하며, 뜬금없는 주제 전환은 하지 않는다.`;
 
     await addDoc(collection(db, "characters"), {
       name,
@@ -81,6 +81,7 @@ export default function CreateCharacter() {
           className="textarea textarea-bordered w-full"
           required
         />
+
         {/* 대화 스타일 */}
         <select value={style} onChange={(e) => setStyle(e.target.value)} className="select select-bordered w-full">
           <option>친근한</option>
@@ -108,6 +109,14 @@ export default function CreateCharacter() {
           </div>
         </div>
 
+        {/* 자주 쓰는 표현 */}
+        <textarea
+          value={frequentPhrases}
+          onChange={(e) => setFrequentPhrases(e.target.value)}
+          placeholder="자주 쓰는 표현 (예: ㅋㅋ, ㅎㅎ, 진짜?)"
+          className="textarea textarea-bordered w-full"
+        />
+
         {/* 대화 주제 제한 */}
         <textarea
           value={topicLimit}
@@ -115,13 +124,23 @@ export default function CreateCharacter() {
           placeholder="대화할 주제나 제한사항 (예: 정치나 경제 주제는 피하기)"
           className="textarea textarea-bordered w-full"
         />
-        {/* 🆕 상황 예시 */}
+
+        {/* 자기소개 문구 */}
+        <textarea
+          value={selfIntro}
+          onChange={(e) => setSelfIntro(e.target.value)}
+          placeholder="자기소개 문구 (대화 시작시, 예: 안녕! 오랜만이야!)"
+          className="textarea textarea-bordered w-full"
+        />
+
+        {/* 상황 예시 */}
         <textarea
           value={situationExamples}
           onChange={(e) => setSituationExamples(e.target.value)}
-          placeholder="상황 예시 (예: 카페에서 우연히 만났을 때, 캠퍼스에서 인사할 때)"
+          placeholder="상황 예시 (예: 카페에서 우연히 만났을 때 대화)"
           className="textarea textarea-bordered w-full"
         />
+
         {/* 프로필 선택 */}
         <div>
           <h2 className="text-lg font-semibold mb-2">프로필 이미지 선택</h2>

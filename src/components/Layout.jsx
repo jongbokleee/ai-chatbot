@@ -9,7 +9,7 @@ export default function Layout() {
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <nav className="bg-white shadow-md px-4 py-3 flex items-center justify-between">
         <Link to="/" className="text-xl font-bold hover:text-blue-600 transition">
-          AI 여자친구 만들기 
+          AI 연인 만들기 
         </Link>
         <div className="md:hidden">
           <button onClick={() => setMenuOpen(!menuOpen)}>
