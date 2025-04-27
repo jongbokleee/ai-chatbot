@@ -1,48 +1,109 @@
-import React, { useState } from "react";
-import { getFirestore, collection, addDoc } from "firebase/firestore";
+import React, { useState, useEffect } from "react";
+import { collection, doc, getDoc, getFirestore, addDoc } from "firebase/firestore";
 import app from "../api/firebase";
 import { useNavigate } from "react-router-dom";
+import { seedDefaults } from "../utils/seedDefaults"; // 경로 주의!
 
 export default function CreateCharacter() {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [prompt, setPrompt] = useState("");
-  const [profileImage, setProfileImage] = useState("");
-  const [mainImage, setMainImage] = useState("");
+  const [profileImages, setProfileImages] = useState([]);
+  const [cardImages, setCardImages] = useState([]);
+  const [selectedProfile, setSelectedProfile] = useState("");
+  const [selectedCard, setSelectedCard] = useState("");
   const navigate = useNavigate();
+
+  const db = getFirestore(app);
+
+  useEffect(() => {
+    const fetchImages = async () => {
+      // ✅ 최초 1회만 seed (중복 insert 안되게 이미 존재 체크 내장됨)
+      await seedDefaults();
+
+      const profileDoc = await getDoc(doc(db, "defaults", "profileImages"));
+      const cardDoc = await getDoc(doc(db, "defaults", "cardImages"));
+
+      if (profileDoc.exists()) {
+        setProfileImages(profileDoc.data().images || []);
+      }
+      if (cardDoc.exists()) {
+        setCardImages(cardDoc.data().images || []);
+      }
+    };
+    fetchImages();
+  }, []);
+
+  const handleProfileSelect = (characterName) => {
+    const profile = profileImages.find((img) => img.name === characterName);
+    const card = cardImages.find((img) => img.name === characterName);
+    setSelectedProfile(profile?.url || "");
+    setSelectedCard(card?.url || "");
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    const db = getFirestore(app); // ✅ 여기서 직접 db 생성
-    const characterData = {
+    if (!selectedProfile || !selectedCard) {
+      alert("프로필 이미지를 선택해주세요!");
+      return;
+    }
+    await addDoc(collection(db, "characters"), {
       name,
       description,
       prompt,
-      profile: profileImage || "https://via.placeholder.com/40",
-      image: mainImage || "https://via.placeholder.com/200x250",
-    };
-
-    try {
-      await addDoc(collection(db, "characters"), characterData); // ✅ db를 직접 collection에 연결
-      alert("✅ 캐릭터가 성공적으로 등록되었습니다!");
-      navigate("/");
-    } catch (error) {
-      console.error("❌ 캐릭터 등록 실패:", error);
-      alert("등록 중 오류가 발생했습니다.");
-    }
+      image: selectedCard,
+      profile: selectedProfile,
+    });
+    navigate("/");
   };
 
   return (
-    <div className="p-8 space-y-6">
-      <h1 className="text-3xl font-bold text-center mb-6">➕ 새 캐릭터 만들기</h1>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="이름" className="w-full p-2 border rounded" required />
-        <textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="설명" className="w-full p-2 border rounded" required />
-        <textarea value={prompt} onChange={(e) => setPrompt(e.target.value)} placeholder="프롬프트" className="w-full p-2 border rounded" required />
-        <input type="text" value={profileImage} onChange={(e) => setProfileImage(e.target.value)} placeholder="프로필 이미지 URL" className="w-full p-2 border rounded" />
-        <input type="text" value={mainImage} onChange={(e) => setMainImage(e.target.value)} placeholder="대표 이미지 URL" className="w-full p-2 border rounded" />
-        <button type="submit" className="w-full p-3 bg-blue-500 text-white rounded hover:bg-blue-600">캐릭터 등록하기</button>
+    <div className="p-8 space-y-8">
+      <h1 className="text-2xl font-bold text-center mb-8">➕ 새 캐릭터 만들기</h1>
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <input
+          type="text"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="이름"
+          className="input input-bordered w-full"
+          required
+        />
+        <textarea
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          placeholder="설명"
+          className="textarea textarea-bordered w-full"
+          required
+        />
+        <textarea
+          value={prompt}
+          onChange={(e) => setPrompt(e.target.value)}
+          placeholder="프롬프트"
+          className="textarea textarea-bordered w-full"
+          required
+        />
+
+        <div>
+          <h2 className="text-lg font-semibold mb-2">프로필 이미지 선택</h2>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            {profileImages.map((img) => (
+              <img
+                key={img.name}
+                src={img.url}
+                alt={img.name}
+                className={`cursor-pointer rounded-lg border-2 w-full h-32 object-cover transition ${
+                  selectedProfile === img.url ? "border-blue-500" : "border-transparent"
+                }`}
+                onClick={() => handleProfileSelect(img.name)}
+              />
+            ))}
+          </div>
+        </div>
+
+        <button type="submit" className="btn btn-primary w-full mt-8">
+          캐릭터 등록하기
+        </button>
       </form>
     </div>
   );

@@ -1,4 +1,3 @@
-// src/pages/Main.jsx
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { getFirestore, collection, getDocs } from "firebase/firestore";
@@ -11,10 +10,22 @@ export default function Main() {
     const fetchCharacters = async () => {
       const db = getFirestore(app);
       const querySnapshot = await getDocs(collection(db, "characters"));
-      const characterList = querySnapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
+      const characterList = querySnapshot.docs.map((doc) => {
+        const data = doc.data();
+        
+        // ✅ image 경로 수정
+        let imageUrl = data.image;
+        if (imageUrl && imageUrl.startsWith("/")) {
+          imageUrl = import.meta.env.BASE_URL + imageUrl.slice(1); 
+          // import.meta.env.BASE_URL은 보통 "/" 이므로 슬래시 한 개만 제거
+        }
+
+        return {
+          id: doc.id,
+          ...data,
+          image: imageUrl,
+        };
+      });
       setCharacters(characterList);
     };
 
@@ -26,8 +37,6 @@ export default function Main() {
       <h1 className="text-3xl font-bold text-center mb-8">🎯 AI 연인 선택하기</h1>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-
-        {/* (1) 등록된 캐릭터들 */}
         {characters.map((character) => (
           <div
             key={character.id}
@@ -49,7 +58,7 @@ export default function Main() {
           </div>
         ))}
 
-        {/* (2) ➕ 새 캐릭터 추가 카드 */}
+        {/* ➕ 새 캐릭터 추가 카드 */}
         <div
           className="bg-gray-100 rounded-2xl border-2 border-dashed flex flex-col items-center justify-center p-6 hover:border-blue-400 hover:bg-gray-50 transition cursor-pointer"
         >
